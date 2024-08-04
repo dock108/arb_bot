@@ -90,11 +90,26 @@ def initialize_exchanges():
     exchange_objects = {}
     for name, config in EXCHANGES.items():
         logger.debug(f"Initializing exchange: {name}")
-        exchange_class = getattr(ccxt, config['class'])
-        exchange_objects[name] = exchange_class({
-            'apiKey': config['apiKey'],
-            'secret': config['secret'],
-        })
+        logger.debug(f"Exchange class: {config['class']}")
+        logger.debug(f"API Key for {name}: {config['apiKey']}")
+        logger.debug(f"Secret Key for {name}: {config['secret']}")
+
+        try:
+            exchange_class = getattr(ccxt, config['class'])
+            exchange_objects[name] = exchange_class({
+                'apiKey': config['apiKey'],
+                'secret': config['secret'],
+            })
+            # Test the connection by loading markets
+            markets = exchange_objects[name].load_markets()
+            logger.debug(f"Successfully connected to {name}. Markets loaded: {list(markets.keys())[:5]}...")
+        except AttributeError as e:
+            logger.error(f"Exchange class '{config['class']}' not found in ccxt for {name}: {e}")
+        except ccxt.AuthenticationError as e:
+            logger.error(f"Authentication error with {name}: {e}")
+        except Exception as e:
+            logger.error(f"Error initializing {name}: {e}")
+
     logger.info(f"Exchanges initialized: {list(exchange_objects.keys())}")
     return exchange_objects
 

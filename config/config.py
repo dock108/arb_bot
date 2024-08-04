@@ -1,6 +1,9 @@
 # config.py
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Exchange configuration with environment variables for sensitive data
 EXCHANGES = {

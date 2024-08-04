@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arbitrage-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arbitrage-bot
+  template:
+    metadata:
+      labels:
+        app: arbitrage-bot
+    spec:
+      containers:
+      - name: arbitrage-bot
+        image: arbitrage-bot:latest
+        imagePullPolicy: Never
+        env:
+        - name: KRAKEN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: KRAKEN_API_KEY
+        - name: KRAKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: KRAKEN_SECRET
+        - name: BINANCE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: BINANCE_API_KEY
+        - name: BINANCE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: BINANCE_SECRET

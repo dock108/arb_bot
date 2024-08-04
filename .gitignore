@@ -1,4 +1,10 @@
-*.log
-*.csv
+# Folders
 venv/
 __pycache__/
+
+# Files
+.env
+
+# Extensions
+*.log
+*.csv

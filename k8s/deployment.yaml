@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: arbitrage-bot
-        image: arbitrage-bot:latest
-        imagePullPolicy: Never
+        image: highlyprofitable/arbitrage-bot:latest
+        imagePullPolicy: Always
         env:
         - name: KRAKEN_API_KEY
           valueFrom:

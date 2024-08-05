@@ -66,8 +66,6 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT }}
         
       - name: Authenticate kubectl
-        
-      - name: Authenticate kubectl
         env:
           cluster: ${{ secrets.GCP_CLUSTER_NAME }}
           zone: ${{ secrets.GCP_ZONE }} 

@@ -42,7 +42,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: gcr.io/${{ secrets.GCP_PROJECT }}/arbitrage-bot:latest
+        tags: gcr.io/arb-bot-431523/arbitrage-bot:latest
 
   deploy:
     runs-on: ubuntu-latest

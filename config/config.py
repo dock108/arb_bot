@@ -5,6 +5,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Logging configuration
+LOGGING_CONFIG = {
+    'level': 'INFO',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    'file': 'arbitrage_bot.log',
+    'console': True
+}
+
+CRYPTOS = ['BTC', 'LTC', 'ETH']
+
 # Exchange configuration with environment variables for sensitive data
 EXCHANGES = {
     'kraken': {
@@ -19,12 +28,8 @@ EXCHANGES = {
     }
 }
 
-CRYPTOS = ['BTC', 'LTC', 'ETH']
-FIAT = 'USD'
-
-# Logging configuration
-LOGGING_CONFIG = {
-    'level': 'INFO',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
-    'file': 'arbitrage_bot.log',
-    'console': True
+EMAIL = {
+    'sender': 'mike.fuscoletti@gmail.com',
+    'sender_token': os.getenv('GMAIL_TOKEN', 'default_api_key'),
+    'recipient': 'mike.fuscoletti@gmail.com'
 }

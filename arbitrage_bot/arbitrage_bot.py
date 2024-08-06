@@ -1,12 +1,10 @@
 import ccxt
 import time
-import csv
-import os
 import logging
 import socket
 from dotenv import load_dotenv
 from framework.arbitrage_framework import ArbitrageFramework
-from config.config import EXCHANGES, LOGGING_CONFIG
+from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL
 
 load_dotenv()
 
@@ -62,10 +60,9 @@ def send_email(subject, body):
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    gmail_user = 'mike.fuscoletti@gmail.com'
-    gmail_password = 'goxje6-bufdYg-zikdix'
-    to_email = 'mike.fuscoletti@gmail.com'
-
+    gmail_user = EMAIL['sender']
+    gmail_password = EMAIL['sender_token']
+    to_email = EMAIL['recipient']
     msg = MIMEMultipart()
     msg['From'] = gmail_user
     msg['To'] = to_email
@@ -91,8 +88,6 @@ def initialize_exchanges():
     for name, config in EXCHANGES.items():
         logger.debug(f"Initializing exchange: {name}")
         logger.debug(f"Exchange class: {config['class']}")
-        logger.debug(f"API Key for {name}: {config['apiKey']}")
-        logger.debug(f"Secret Key for {name}: {config['secret']}")
 
         try:
             exchange_class = getattr(ccxt, config['class'])
@@ -100,7 +95,6 @@ def initialize_exchanges():
                 'apiKey': config['apiKey'],
                 'secret': config['secret'],
             })
-            # Test the connection by loading markets
             markets = exchange_objects[name].load_markets()
             logger.debug(f"Successfully connected to {name}. Markets loaded: {list(markets.keys())[:5]}...")
         except AttributeError as e:
@@ -116,19 +110,12 @@ def initialize_exchanges():
 def real_time_arbitrage_bot():
     logger.info("Starting real-time arbitrage bot.")
     exchanges = initialize_exchanges()
-    framework = ArbitrageFramework(initial_account_value=10000, exchanges=exchanges)
-
-    # Create CSV file if it doesn't exist
-    if not os.path.isfile('opportunities.csv'):
-        logger.debug("Creating opportunities CSV file.")
-        with open('opportunities.csv', mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["Timestamp", "Buy Exchange", "Sell Exchange", "Buy Pair", "Sell Pair", "Buy Price", "Sell Price", "Gross Profit (%)", "Net Profit", "Total Taxes", "Total Fees", "Total Money Out"])
+    framework = ArbitrageFramework(exchanges=exchanges)
 
     last_log_time = time.time()
     while True:
         logger.debug("Fetching real-time prices.")
-        prices = framework.exchange_manager.get_real_time_prices()  # No need to pass exchanges
+        prices = framework.exchange_manager.get_real_time_prices()
         logger.debug(f"Prices fetched: {prices}")
 
         logger.debug("Checking for arbitrage opportunities.")
@@ -139,14 +126,14 @@ def real_time_arbitrage_bot():
 
         # Log activity every hour
         current_time = time.time()
-        if current_time - last_log_time >= 900:  # Log every 15 minutes for demonstration, can be changed
+        if current_time - last_log_time >= 3600:
             logger.info("Still running. Last prices found:")
             for exchange, pairs in prices.items():
                 logger.info(f"{exchange}: {pairs}")
             last_log_time = current_time
         
         logger.debug("Sleeping for 30 seconds before the next check.")
-        time.sleep(15)  # Check every 30 seconds
+        time.sleep(30)  # Check every 30 seconds
 
 # Start the bot
 real_time_arbitrage_bot()

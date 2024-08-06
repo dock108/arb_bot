@@ -1,6 +1,6 @@
 import ccxt
 import logging
-from config.config import CRYPTOS, FIAT
+from config.config import CRYPTOS
 
 # Initialize logger
 logger = logging.getLogger('ArbitrageBot')
@@ -89,13 +89,6 @@ class ExchangeManager:
         for exchange_name, exchange in self.exchanges.items():
             exchange_prices = {}
             markets = self.load_markets(exchange_name, exchange)
-
-            fiat_pair_suffix = 'USDT' if exchange_name.lower() == 'binance' else FIAT
-
-            # Fetch fiat pairs
-            for crypto in CRYPTOS:
-                pair = f"{crypto}/{fiat_pair_suffix}"
-                exchange_prices[pair] = self.fetch_pair_price(exchange_name, exchange, markets, pair)
 
             # Fetch crypto-to-crypto pairs
             for i, crypto1 in enumerate(CRYPTOS):

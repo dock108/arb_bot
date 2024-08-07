@@ -16,7 +16,7 @@ LOGGING_CONFIG = {
     'console': True
 }
 
-CRYPTOS = ['BTC', 'LTC', 'ETH']
+CRYPTOS = ['BTC', 'LTC', 'ETH', 'XRP', 'BCH', 'ADA', 'DOT', 'BNB', 'SOL', 'LINK', 'XLM', 'UNI', 'MATIC', 'DOGE', 'AVAX', 'VET', 'TRX', 'XTZ']
 
 # Exchange configuration with environment variables for sensitive data
 EXCHANGES = {

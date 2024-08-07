@@ -102,14 +102,31 @@ class ArbitrageFramework:
         Parameters:
         - opportunities (List[dict]): A list of arbitrage opportunities.
         """
-        # Find the best opportunity
-        best_opportunity = max(opportunities, key=lambda x: x['gross_profit_percentage'])
+        # Filter opportunities that are greater than ARBITRAGE_PERCENT
+        viable_opportunities = [
+            opportunity for opportunity in opportunities
+            if opportunity['gross_profit_percentage'] > ARBITRAGE_PERCENT
+        ]
     
-        # Check if the opportunity is profitable and the buy exchange is not on cooldown
-        if best_opportunity['gross_profit_percentage'] > ARBITRAGE_PERCENT:
-            logger.info(f"Arbitrage opportunity greater than {ARBITRAGE_PERCENT} found.")
+        # Sort viable opportunities by gross profit percentage in descending order
+        viable_opportunities.sort(key=lambda x: x['gross_profit_percentage'], reverse=True)
+    
+        if viable_opportunities:
+            logger.info(f"Arbitrage opportunities greater than {ARBITRAGE_PERCENT}% found.")
+    
+            if DISABLE_TRADES:
+                # Log each opportunity when trades are disabled
+                for opportunity in viable_opportunities:
+                    logger.info(f"Arbitrage Opportunity: {opportunity['gross_profit_percentage']:.2f}%")
+                    logger.info(f"  Buy {opportunity['buy_pair']} on {opportunity['buy_exchange']} at "
+                                f"{opportunity['buy_price']:.10f}")
+                    logger.info(f"  Sell {opportunity['sell_pair']} on {opportunity['sell_exchange']} at "
+                                f"{opportunity['sell_price']:.10f}")
+                    logger.info(f"  Estimated Profit: {opportunity['gross_profit_percentage']:.2f}%")
+    
+            # Proceed to execute the best opportunity if trades are enabled
             if not DISABLE_TRADES:
-                # Execute the trade if trading is enabled
+                best_opportunity = viable_opportunities[0]  # Take the best opportunity
                 self.execute_trade(best_opportunity)
                 # Send email notification about the executed trade
                 subject = "Arbitrage Trade Executed"
@@ -121,16 +138,8 @@ class ArbitrageFramework:
                         f"Trade Amount: {min(best_opportunity['buy_amount'], best_opportunity['sell_amount'])}")
                 self.send_email(subject, body)
                 logger.info("Arbitrage opportunity executed successfully.")
-            else:
-                # Log information that trades are currently disabled
-                logger.info("Trades are currently disabled. No trade executed.")
-                logger.info(f"Potential trade:\n"
-                            f"Buy {best_opportunity['buy_pair']} on {best_opportunity['buy_exchange']} at "
-                            f"{best_opportunity['buy_price']:.10f}\n"
-                            f"Sell {best_opportunity['sell_pair']} on {best_opportunity['sell_exchange']} at "
-                            f"{best_opportunity['sell_price']:.10f}")
         else:
-            logger.debug("No viable arbitrage opportunity or exchange is on cooldown.")
+            logger.debug("No viable arbitrage opportunities found above the threshold or exchange is on cooldown.")
             
     def execute_trade(self, opportunity):
         """

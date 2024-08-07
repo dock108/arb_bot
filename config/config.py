@@ -7,6 +7,7 @@ load_dotenv()
 
 # Disable Live Trading
 DISABLE_TRADES = true
+TEST_HOURS = 10
 
 # Logging configuration
 LOGGING_CONFIG = {

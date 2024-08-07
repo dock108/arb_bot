@@ -117,12 +117,11 @@ class ArbitrageFramework:
             if DISABLE_TRADES:
                 # Log each opportunity when trades are disabled
                 for opportunity in viable_opportunities:
-                    logger.info(f"Arbitrage Opportunity: {opportunity['gross_profit_percentage']:.2f}%")
                     logger.info(f"  Buy {opportunity['buy_pair']} on {opportunity['buy_exchange']} at "
                                 f"{opportunity['buy_price']:.10f}")
                     logger.info(f"  Sell {opportunity['sell_pair']} on {opportunity['sell_exchange']} at "
                                 f"{opportunity['sell_price']:.10f}")
-                    logger.info(f"  Estimated Profit: {opportunity['gross_profit_percentage']:.2f}%")
+                    logger.info(f"  Gross Profit: {opportunity['gross_profit_percentage']:.2f}%")
     
             # Proceed to execute the best opportunity if trades are enabled
             if not DISABLE_TRADES:

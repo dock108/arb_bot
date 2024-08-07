@@ -55,33 +55,6 @@ def force_ipv4():
 
 force_ipv4()
 
-def send_email(subject, body):
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-
-    gmail_user = EMAIL['sender']
-    gmail_password = EMAIL['sender_token']
-    to_email = EMAIL['recipient']
-    msg = MIMEMultipart()
-    msg['From'] = gmail_user
-    msg['To'] = to_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        logger.debug("Attempting to send email.")
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        text = msg.as_string()
-        server.sendmail(gmail_user, to_email, text)
-        server.quit()
-        logger.info("Email sent successfully")
-    except Exception as e:
-        logger.error(f"Failed to send email: {e}")
-
 def initialize_exchanges():
     """Initialize exchanges based on the configuration file."""
     exchange_objects = {}

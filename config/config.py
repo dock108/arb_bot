@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Disable Live Trading
+DISABLE_TRADES = true
+
 # Logging configuration
 LOGGING_CONFIG = {
     'level': 'INFO',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL

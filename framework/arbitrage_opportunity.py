@@ -12,17 +12,12 @@ class ArbitrageOpportunity:
     viability, and executes trades if profitable.
     """
 
-    def __init__(self, cooldown_tracker, cooldown_period=120):
+    def __init__(self):
         """
         Initialize the ArbitrageOpportunity with cooldown tracking and account management.
 
-        Parameters:
-        - cooldown_tracker (dict): A dictionary to track cooldown status for each exchange to prevent rapid successive trades.
-        - cooldown_period (int): The cooldown period in seconds before an exchange can execute another trade.
         """
-        self.cooldown_tracker = cooldown_tracker
-        self.cooldown_period = cooldown_period
-
+        
     def find_arbitrage_opportunities(self, prices, buy_exchange, sell_exchange):
         """
         Find all potential arbitrage opportunities across exchanges.
@@ -42,9 +37,9 @@ class ArbitrageOpportunity:
         current_time = time.time()
 
         # Check if the buy exchange is on cooldown
-        if current_time < self.cooldown_tracker.get(buy_exchange, 0):
-            logger.debug(f"{buy_exchange} is on cooldown. Skipping opportunities for this exchange.")
-            return opportunities
+        # if current_time < self.cooldown_tracker.get(buy_exchange, 0):
+        #     logger.debug(f"{buy_exchange} is on cooldown. Skipping opportunities for this exchange.")
+        #     return opportunities
 
         # Iterate over each currency pair available on the buy exchange
         for pair in prices[buy_exchange]:

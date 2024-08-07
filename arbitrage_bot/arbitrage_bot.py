@@ -4,7 +4,7 @@ import logging
 import socket
 from dotenv import load_dotenv
 from framework.arbitrage_framework import ArbitrageFramework
-from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL
+from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL, DISABLE_TRADES, TEST_HOURS
 
 load_dotenv()
 
@@ -55,33 +55,6 @@ def force_ipv4():
 
 force_ipv4()
 
-def send_email(subject, body):
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-
-    gmail_user = EMAIL['sender']
-    gmail_password = EMAIL['sender_token']
-    to_email = EMAIL['recipient']
-    msg = MIMEMultipart()
-    msg['From'] = gmail_user
-    msg['To'] = to_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        logger.debug("Attempting to send email.")
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(gmail_user, gmail_password)
-        text = msg.as_string()
-        server.sendmail(gmail_user, to_email, text)
-        server.quit()
-        logger.info("Email sent successfully")
-    except Exception as e:
-        logger.error(f"Failed to send email: {e}")
-
 def initialize_exchanges():
     """Initialize exchanges based on the configuration file."""
     exchange_objects = {}
@@ -112,7 +85,9 @@ def real_time_arbitrage_bot():
     exchanges = initialize_exchanges()
     framework = ArbitrageFramework(exchanges=exchanges)
 
-    last_log_time = time.time()
+    start_time = time.time()
+    last_log_time = start_time
+
     while True:
         logger.debug("Fetching real-time prices.")
         prices = framework.exchange_manager.get_real_time_prices()
@@ -131,6 +106,13 @@ def real_time_arbitrage_bot():
             for exchange, pairs in prices.items():
                 logger.info(f"{exchange}: {pairs}")
             last_log_time = current_time
+
+        # Check if the test duration has elapsed if trades are disabled
+        if DISABLE_TRADES:
+            elapsed_hours = (current_time - start_time) / 3600
+            if elapsed_hours >= TEST_HOURS:
+                logger.info(f"Test duration of {TEST_HOURS} hours completed. Shutting down.")
+                break  # Exit the loop to stop the bot
         
         logger.debug("Sleeping for 30 seconds before the next check.")
         time.sleep(30)  # Check every 30 seconds

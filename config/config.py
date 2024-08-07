@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ARBITRAGE_PERCENT = 1.35
+
+# Disable Live Trading
+DISABLE_TRADES = True
+TEST_HOURS = 10
+
 # Logging configuration
 LOGGING_CONFIG = {
     'level': 'INFO',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -12,7 +18,7 @@ LOGGING_CONFIG = {
     'console': True
 }
 
-CRYPTOS = ['BTC', 'LTC', 'ETH']
+CRYPTOS = ['BTC', 'ETH', 'LTC', 'XRP', 'BCH', 'ADA', 'DOT', 'BNB', 'SOL', 'LINK', 'XLM', 'UNI', 'MATIC', 'DOGE', 'AVAX', 'VET', 'TRX', 'XTZ']
 
 # Exchange configuration with environment variables for sensitive data
 EXCHANGES = {

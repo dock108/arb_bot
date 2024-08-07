@@ -66,7 +66,7 @@ class ExchangeManager:
                     logger.debug(f"Fetched {pair} price from {exchange_name}: {last_price}")
                     return float(last_price)
                 else:
-                    logger.warning(f"No last price for {pair} on {exchange_name}")
+                    logger.debug(f"No last price for {pair} on {exchange_name}")
             except ccxt.BaseError as e:
                 logger.error(f"Error fetching {pair} from {exchange_name}: {str(e)}")
         else:

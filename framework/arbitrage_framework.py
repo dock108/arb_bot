@@ -106,7 +106,7 @@ class ArbitrageFramework:
         best_opportunity = max(opportunities, key=lambda x: x['gross_profit_percentage'])
     
         # Check if the opportunity is profitable and the buy exchange is not on cooldown
-        if best_opportunity['gross_profit_percentage'] > 1 and time.time() > self.cooldown_tracker[best_opportunity['buy_exchange']]:
+        if best_opportunity['gross_profit_percentage'] > 1:
             if not DISABLE_TRADES:
                 # Execute the trade if trading is enabled
                 self.execute_trade(best_opportunity)

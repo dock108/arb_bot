@@ -42,36 +42,45 @@ class ExchangeManager:
             logger.error(f"Error loading markets for {exchange_name}: {str(e)}")
             return {}
 
-    def fetch_pair_price(self, exchange_name, exchange, markets, pair):
+    def fetch_pair_prices(self, exchange_name, exchange, markets, pair):
         """
-        Fetch the price for a given trading pair on an exchange.
+        Fetch the bid, ask, and last prices for a given trading pair on an exchange.
 
-        This method attempts to retrieve the latest price for the specified trading pair,
+        This method attempts to retrieve the latest prices for the specified trading pair,
         logging any issues encountered during the process.
 
         Parameters:
         - exchange_name (str): The name of the exchange.
         - exchange (ccxt.Exchange): The ccxt exchange object.
         - markets (dict): A dictionary of available markets on the exchange.
-        - pair (str): The trading pair to fetch the price for.
+        - pair (str): The trading pair to fetch the prices for.
 
         Returns:
-        - float or None: The last price of the trading pair, or None if not available.
+        - dict: A dictionary containing the bid, ask, and last prices for the trading pair,
+                or an empty dictionary if the prices are not available.
         """
         if pair in markets:
             try:
                 ticker = exchange.fetch_ticker(pair)
+                bid_price = ticker.get('bid', None)
+                ask_price = ticker.get('ask', None)
                 last_price = ticker.get('last', None)
-                if last_price is not None:
-                    logger.debug(f"Fetched {pair} price from {exchange_name}: {last_price}")
-                    return float(last_price)
+
+                if bid_price is not None and ask_price is not None:
+                    logger.debug(f"Fetched {pair} prices from {exchange_name}: Bid: {bid_price}, Ask: {ask_price}, Last: {last_price}")
+                    return {
+                        'bid': float(bid_price),
+                        'ask': float(ask_price),
+                        'last': float(last_price)
+                    }
                 else:
-                    logger.debug(f"No last price for {pair} on {exchange_name}")
+                    logger.debug(f"No bid/ask price for {pair} on {exchange_name}")
             except ccxt.BaseError as e:
                 logger.error(f"Error fetching {pair} from {exchange_name}: {str(e)}")
         else:
             logger.debug(f"Market symbol {pair} not available on {exchange_name}")
-        return None
+        
+        return {}  # Return an empty dictionary if prices are not available
 
     def get_real_time_prices(self):
         """
@@ -94,12 +103,15 @@ class ExchangeManager:
             for i, crypto1 in enumerate(CRYPTOS):
                 for crypto2 in CRYPTOS[i + 1:]:
                     pair = f"{crypto1}/{crypto2}"
-                    exchange_prices[pair] = self.fetch_pair_price(exchange_name, exchange, markets, pair)
+                    pair_prices = self.fetch_pair_prices(exchange_name, exchange, markets, pair)
                     
                     # Try reverse pair if necessary
-                    if not exchange_prices[pair]:
+                    if not pair_prices:
                         reverse_pair = f"{crypto2}/{crypto1}"
-                        exchange_prices[reverse_pair] = self.fetch_pair_price(exchange_name, exchange, markets, reverse_pair)
+                        pair_prices = self.fetch_pair_prices(exchange_name, exchange, markets, reverse_pair)
+
+                    if pair_prices:  # Ensure pair_prices is not empty
+                        exchange_prices[pair] = pair_prices
 
             prices[exchange_name] = exchange_prices
         logger.debug(f"Fetched prices: {prices}")

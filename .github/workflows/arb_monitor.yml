@@ -1,4 +1,4 @@
-name: Run Arbitrage Bot
+name: Run Arbitrage Monitor
 
 on:
   workflow_dispatch:

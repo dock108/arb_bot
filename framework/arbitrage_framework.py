@@ -24,14 +24,12 @@ class ArbitrageFramework:
 
         Attributes:
         - exchange_manager (ExchangeManager): Manages the fetching of price data from exchanges.
-        - cooldown_tracker (dict): Tracks cooldown status for each exchange to prevent rapid successive trades.
         """
         logger.debug("Initializing ArbitrageFramework.")
 
         # Store the exchanges in the class attribute
         self.exchanges = exchanges  # Initialize the exchanges attribute here
         self.exchange_manager = ExchangeManager(exchanges)
-        self.cooldown_tracker = {exchange: 0 for exchange in exchanges.keys()}
 
         # Fetch and log balances for each exchange and currency if logging level is set to DEBUG
         for exchange_name in self.exchanges:
@@ -188,7 +186,8 @@ class ArbitrageFramework:
                 logger.info(f"Sell order executed: {sell_order}")
 
                 # Update cooldown tracker
-                self.cooldown_tracker[opportunity['buy_exchange']] = time.time() + 900  # 15 minute cooldown
+                # Need new cooldown logic
+
                 # Fetch and log balances for each exchange and currency if logging level is set to DEBUG
                 for exchange_name in self.exchanges:
                     try:

@@ -37,9 +37,9 @@ class ArbitrageOpportunity:
         current_time = time.time()
 
         # Check if the buy exchange is on cooldown
-        if current_time < self.cooldown_tracker.get(buy_exchange, 0):
-            logger.debug(f"{buy_exchange} is on cooldown. Skipping opportunities for this exchange.")
-            return opportunities
+        # if current_time < self.cooldown_tracker.get(buy_exchange, 0):
+        #     logger.debug(f"{buy_exchange} is on cooldown. Skipping opportunities for this exchange.")
+        #     return opportunities
 
         # Iterate over each currency pair available on the buy exchange
         for pair in prices[buy_exchange]:

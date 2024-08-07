@@ -107,7 +107,7 @@ class ArbitrageFramework:
     
         # Check if the opportunity is profitable and the buy exchange is not on cooldown
         if best_opportunity['gross_profit_percentage'] > ARBITRAGE_PERCENT:
-            logger.info("Arbitrage opportunity greater than {ARBITRAGE_PERCENT} found.")
+            logger.info(f"Arbitrage opportunity greater than {ARBITRAGE_PERCENT} found.")
             if not DISABLE_TRADES:
                 # Execute the trade if trading is enabled
                 self.execute_trade(best_opportunity)

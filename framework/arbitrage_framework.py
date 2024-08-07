@@ -87,7 +87,7 @@ class ArbitrageFramework:
             for sell_exchange in prices:
                 if buy_exchange != sell_exchange:
                     # Create ArbitrageOpportunity instances for each potential opportunity
-                    arbitrage_opportunity = ArbitrageOpportunity(self.cooldown_tracker)
+                    arbitrage_opportunity = ArbitrageOpportunity()
                     opportunities.extend(arbitrage_opportunity.find_arbitrage_opportunities(prices, buy_exchange, sell_exchange))
 
         return opportunities

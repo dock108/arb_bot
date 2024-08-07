@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Disable Live Trading
-DISABLE_TRADES = true
+DISABLE_TRADES = True
 TEST_HOURS = 10
 
 # Logging configuration

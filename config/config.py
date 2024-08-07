@@ -13,7 +13,7 @@ TEST_HOURS = 10
 
 # Logging configuration
 LOGGING_CONFIG = {
-    'level': 'DEBUG',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    'level': 'INFO',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
     'file': 'arbitrage_bot.log',
     'console': True
 }

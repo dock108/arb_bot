@@ -126,57 +126,64 @@ class ArbitrageFramework:
     
             # Proceed to execute the best opportunity if trades are enabled
             if not DISABLE_TRADES:
-                best_opportunity = viable_opportunities[0]  # Take the best opportunity
-                self.execute_trade(best_opportunity)
-                # Send email notification about the executed trade
-                subject = "Arbitrage Trade Executed"
-                body = (f"Trade executed successfully:\n"
-                        f"Buy {best_opportunity['buy_pair']} on {best_opportunity['buy_exchange']} at "
-                        f"{best_opportunity['buy_price']:.10f}\n"
-                        f"Sell {best_opportunity['sell_pair']} on {best_opportunity['sell_exchange']} at "
-                        f"{best_opportunity['sell_price']:.10f}\n"
-                        f"Trade Amount: {min(best_opportunity['buy_amount'], best_opportunity['sell_amount'])}")
-                self.send_email(subject, body)
-                logger.info("Arbitrage opportunity executed successfully.")
+                for opportunity in viable_opportunities:
+                    success = self.execute_trade(opportunity)
+                    if success:
+                        # Send email notification about the executed trade
+                        subject = "Arbitrage Trade Executed"
+                        body = (f"Trade executed successfully:\n"
+                                f"Buy {opportunity['buy_pair']} on {opportunity['buy_exchange']} at "
+                                f"{opportunity['buy_price']:.10f}\n"
+                                f"Sell {opportunity['sell_pair']} on {opportunity['sell_exchange']} at "
+                                f"{opportunity['sell_price']:.10f}\n"
+                                f"Trade Amount: {min(opportunity['buy_amount'], opportunity['sell_amount'])}")
+                        self.send_email(subject, body)
+                        logger.info("Arbitrage opportunity executed successfully.")
+                        break  # Exit the loop after a successful trade
+                    else:
+                        logger.info("Moving to the next viable opportunity due to insufficient funds.")
         else:
             logger.debug("No viable arbitrage opportunities found above the threshold or exchange is on cooldown.")
-            
+
     def execute_trade(self, opportunity):
         """
         Execute the trade for a given arbitrage opportunity.
-
+    
         This method performs the trade, logging the details and updating account balances accordingly.
-
+    
         Parameters:
         - opportunity (dict): A dictionary representing the arbitrage opportunity.
+    
+        Returns:
+        - bool: True if the trade was successful, False otherwise.
         """
         logger.info("Arbitrage Opportunity Found:")
         logger.info(f"Buy {opportunity['buy_pair']} on {opportunity['buy_exchange']} at {opportunity['buy_price']:.10f}")
         logger.info(f"Sell {opportunity['sell_pair']} on {opportunity['sell_exchange']} at {opportunity['sell_price']:.10f}")
-
+    
         # Check balances
         buy_currency = opportunity['buy_pair'].split('/')[0]
         sell_currency = opportunity['sell_pair'].split('/')[0]
-
+    
         buy_balance = self.get_balance(opportunity['buy_exchange'], buy_currency)
         sell_balance = self.get_balance(opportunity['sell_exchange'], sell_currency)
-
+    
         # Define minimum balance requirements
         min_balances = {
             'ETH': 0.15,
             'LTC': 5,
             'BTC': 0.0075
         }
-
+    
         # Check if both the buy and sell currencies meet the minimum balance requirements
         if buy_balance >= min_balances.get(buy_currency, 0) and sell_balance >= min_balances.get(sell_currency, 0):
             # Proceed with executing the trade
             logger.info("Sufficient balances found. Executing trade.")
-
+    
             try:
                 # Trade the minimum amount of the two currencies
                 trade_amount = min(buy_balance, sell_balance)
-
+    
                 # Execute buy order
                 buy_order = self.exchanges[opportunity['buy_exchange']].create_order(
                     symbol=opportunity['buy_pair'],
@@ -185,7 +192,7 @@ class ArbitrageFramework:
                     amount=trade_amount
                 )
                 logger.info(f"Buy order executed: {buy_order}")
-
+    
                 # Execute sell order
                 sell_order = self.exchanges[opportunity['sell_exchange']].create_order(
                     symbol=opportunity['sell_pair'],
@@ -194,10 +201,10 @@ class ArbitrageFramework:
                     amount=trade_amount
                 )
                 logger.info(f"Sell order executed: {sell_order}")
-
-                # Update cooldown tracker
-                # Need new cooldown logic
-
+    
+                # Update cooldown tracker (Implement the logic as needed)
+                # self.cooldown_tracker[opportunity['buy_exchange']] = time.time() + 3600  # 1-hour cooldown
+    
                 # Fetch and log balances for each exchange and currency if logging level is set to DEBUG
                 for exchange_name in self.exchanges:
                     try:
@@ -208,10 +215,14 @@ class ArbitrageFramework:
                                 logger.info(f"  {currency}: {balance_data}")
                     except Exception as e:
                         logger.error(f"Failed to fetch balances for {exchange_name}: {e}")
+                
+                return True
             except Exception as e:
                 logger.error(f"Trade execution failed: {e}")
+                return False
         else:
             logger.info("Insufficient balance for trade execution.")
+            return False
 
     def get_balance(self, exchange_name, currency):
         """

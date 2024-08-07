@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ARBITRAGE_PERCENT = 1.25
+ARBITRAGE_PERCENT = 1.5
 
 # Disable Live Trading
 DISABLE_TRADES = True

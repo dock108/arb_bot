@@ -2,6 +2,7 @@ import time
 import logging
 from framework.exchange_manager import ExchangeManager
 from framework.arbitrage_opportunity import ArbitrageOpportunity
+from CONFIG import DISABLED_TRADES
 
 # Initialize logger
 logger = logging.getLogger('ArbitrageBot')
@@ -43,6 +44,33 @@ class ArbitrageFramework:
             except Exception as e:
                 logger.error(f"Failed to fetch balances for {exchange_name}: {e}")
 
+    def send_email(subject, body):
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+    
+        gmail_user = EMAIL['sender']
+        gmail_password = EMAIL['sender_token']
+        to_email = EMAIL['recipient']
+        msg = MIMEMultipart()
+        msg['From'] = gmail_user
+        msg['To'] = to_email
+        msg['Subject'] = subject
+    
+        msg.attach(MIMEText(body, 'plain'))
+    
+        try:
+            logger.debug("Attempting to send email.")
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(gmail_user, gmail_password)
+            text = msg.as_string()
+            server.sendmail(gmail_user, to_email, text)
+            server.quit()
+            logger.info("Email sent successfully")
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+
     def check_real_time_arbitrage(self, prices):
         """
         Check for real-time arbitrage opportunities across multiple exchanges.
@@ -81,7 +109,11 @@ class ArbitrageFramework:
 
         # Check if the opportunity is profitable and the buy exchange is not on cooldown
         if best_opportunity['gross_profit_percentage'] > 1 and time.time() > self.cooldown_tracker[best_opportunity['buy_exchange']]:
-            self.execute_trade(best_opportunity)
+            # If DISABLED_TRADES = false
+                self.execute_trade(best_opportunity)
+                # Add send email logic for pair trade and amount
+            # else info log trades disabled in this mode
+
             logger.info("Arbitrage opportunity executed successfully.")
         else:
             logger.debug("No viable arbitrage opportunity or exchange is on cooldown.")

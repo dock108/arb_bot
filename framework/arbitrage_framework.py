@@ -2,7 +2,7 @@ import time
 import logging
 from framework.exchange_manager import ExchangeManager
 from framework.arbitrage_opportunity import ArbitrageOpportunity
-from config.config import DISABLED_TRADES
+from config.config import DISABLE_TRADES
 
 # Initialize logger
 logger = logging.getLogger('ArbitrageBot')

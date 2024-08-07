@@ -4,7 +4,7 @@ import logging
 import socket
 from dotenv import load_dotenv
 from framework.arbitrage_framework import ArbitrageFramework
-from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL
+from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL, DISABLE_TRADES
 
 load_dotenv()
 

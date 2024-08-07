@@ -2,7 +2,7 @@ import time
 import logging
 from framework.exchange_manager import ExchangeManager
 from framework.arbitrage_opportunity import ArbitrageOpportunity
-from config.config import DISABLE_TRADES
+from config.config import DISABLE_TRADES, ARBITRAGE_PERCENT
 
 # Initialize logger
 logger = logging.getLogger('ArbitrageBot')
@@ -106,7 +106,7 @@ class ArbitrageFramework:
         best_opportunity = max(opportunities, key=lambda x: x['gross_profit_percentage'])
     
         # Check if the opportunity is profitable and the buy exchange is not on cooldown
-        if best_opportunity['gross_profit_percentage'] > 1:
+        if best_opportunity['gross_profit_percentage'] > ARBITRAGE_PERCENT:
             if not DISABLE_TRADES:
                 # Execute the trade if trading is enabled
                 self.execute_trade(best_opportunity)

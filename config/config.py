@@ -9,7 +9,7 @@ ARBITRAGE_PERCENT = 1.35
 
 # Disable Live Trading
 DISABLE_TRADES = True
-TEST_HOURS = 6  # Max 6 hours or action fail....
+TEST_HOURS = 1
 
 # Logging configuration
 LOGGING_CONFIG = {

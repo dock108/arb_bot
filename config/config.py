@@ -9,16 +9,34 @@ ARBITRAGE_PERCENT = 1.35
 
 # Disable Live Trading
 DISABLE_TRADES = True
-TEST_HOURS = 10
+TEST_HOURS = 6  # Max 6 hours or action fail....
 
 # Logging configuration
 LOGGING_CONFIG = {
     'level': 'DEBUG',  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
     'file': 'arbitrage_bot.log',
-    'console': True
+    'console': True,
+    'log_minutes': 60  # Set log activity interval in minutes
 }
 
-CRYPTOS = ['BTC', 'ETH', 'LTC', 'XRP', 'BCH', 'ADA', 'DOT', 'BNB', 'SOL', 'LINK', 'XLM', 'UNI', 'MATIC', 'DOGE', 'AVAX', 'VET', 'TRX', 'XTZ']
+# Cooldown time in hours before rechecking an arbitrage opportunity
+COOLDOWN_HOURS = 4
+
+CRYPTOS = [
+    'BTC', 'ETH', 'LTC',
+    'XRP', 'BCH', 'ADA',
+    'DOT', 'BNB', 'SOL',
+    'LINK', 'XLM', 'UNI',
+    'MATIC', 'DOGE', 'AVAX',
+    'VET', 'TRX', 'XTZ'
+]
+
+# Minimum balances required for trading
+MINIMUM_BALANCES = {
+    'BTC': 0.0075,
+    'ETH': 0.15,
+    'LTC': 5,
+}
 
 # Exchange configuration with environment variables for sensitive data
 EXCHANGES = {

@@ -4,12 +4,18 @@ import logging
 import socket
 from dotenv import load_dotenv
 from framework.arbitrage_framework import ArbitrageFramework
-from config.config import LOGGING_CONFIG, EXCHANGES, EMAIL, DISABLE_TRADES, TEST_HOURS
+from config.config import LOGGING_CONFIG, EXCHANGES, DISABLE_TRADES, TEST_HOURS
 
 load_dotenv()
 
 # Configure logging
 def setup_logging():
+    """
+    Set up logging based on the configuration file.
+    
+    Returns:
+    - logger (logging.Logger): Configured logger instance.
+    """
     logging_level = getattr(logging, LOGGING_CONFIG['level'].upper(), logging.INFO)
     
     # Create logger
@@ -41,6 +47,9 @@ logger = setup_logging()
 
 # Force Python to use IPv4 for all outgoing connections
 def force_ipv4():
+    """
+    Force the bot to use IPv4 for all outgoing connections by overriding the default socket behavior.
+    """
     logger.debug("Forcing IPv4 usage for all outgoing connections.")
     original_getaddrinfo = socket.getaddrinfo
 
@@ -56,7 +65,12 @@ def force_ipv4():
 force_ipv4()
 
 def initialize_exchanges():
-    """Initialize exchanges based on the configuration file."""
+    """
+    Initialize exchange connections based on the configuration file.
+    
+    Returns:
+    - exchange_objects (dict): Dictionary of initialized exchange objects.
+    """
     exchange_objects = {}
     for name, config in EXCHANGES.items():
         logger.debug(f"Initializing exchange: {name}")
@@ -81,6 +95,10 @@ def initialize_exchanges():
     return exchange_objects
 
 def real_time_arbitrage_bot():
+    """
+    Main loop for the real-time arbitrage bot.
+    Initializes exchanges, fetches prices, finds opportunities, executes trades, and logs activity.
+    """
     logger.info("Starting real-time arbitrage bot.")
     exchanges = initialize_exchanges()
     framework = ArbitrageFramework(exchanges=exchanges)
@@ -89,33 +107,103 @@ def real_time_arbitrage_bot():
     last_log_time = start_time
 
     while True:
-        logger.debug("Fetching real-time prices.")
-        prices = framework.exchange_manager.get_real_time_prices()
-        logger.debug(f"Prices fetched: {prices}")
-
-        logger.debug("Checking for arbitrage opportunities.")
-        opportunities = framework.check_real_time_arbitrage(prices)  # Get the list of opportunities
+        prices = fetch_prices(framework)
+        opportunities = find_arbitrage_opportunities(framework, prices)
 
         if opportunities:
-            framework.execute_best_opportunity(opportunities)  # Execute the best opportunity
+            execute_best_opportunity(framework, opportunities)
 
-        # Log activity every hour
-        current_time = time.time()
-        if current_time - last_log_time >= 3600:
-            logger.info("Still running. Last prices found:")
-            for exchange, pairs in prices.items():
-                logger.info(f"{exchange}: {pairs}")
-            last_log_time = current_time
+        last_log_time = log_activity_if_needed(prices, last_log_time)
 
-        # Check if the test duration has elapsed if trades are disabled
-        if DISABLE_TRADES:
-            elapsed_hours = (current_time - start_time) / 3600
-            if elapsed_hours >= TEST_HOURS:
-                logger.info(f"Test duration of {TEST_HOURS} hours completed. Shutting down.")
-                break  # Exit the loop to stop the bot
-        
-        logger.debug("Sleeping for 30 seconds before the next check.")
-        time.sleep(30)  # Check every 30 seconds
+        if should_stop_bot(start_time):
+            logger.info("Shutting down the bot.")
+            break
+
+        sleep_before_next_check()
+
+def fetch_prices(framework):
+    """
+    Fetch real-time prices from the exchanges using the arbitrage framework.
+
+    Parameters:
+    - framework (ArbitrageFramework): The arbitrage framework instance.
+
+    Returns:
+    - prices (dict): Dictionary containing the fetched prices from all exchanges.
+    """
+    logger.debug("Fetching real-time prices.")
+    prices = framework.exchange_manager.get_real_time_prices()
+    logger.debug(f"Prices fetched: {prices}")
+    return prices
+
+def find_arbitrage_opportunities(framework, prices):
+    """
+    Check for and return arbitrage opportunities based on the fetched prices.
+
+    Parameters:
+    - framework (ArbitrageFramework): The arbitrage framework instance.
+    - prices (dict): Dictionary of current prices from exchanges.
+
+    Returns:
+    - opportunities (list): List of potential arbitrage opportunities.
+    """
+    logger.debug("Checking for arbitrage opportunities.")
+    opportunities = framework.check_real_time_arbitrage(prices)
+    return opportunities
+
+def execute_best_opportunity(framework, opportunities):
+    """
+    Execute the best arbitrage opportunity found.
+
+    Parameters:
+    - framework (ArbitrageFramework): The arbitrage framework instance.
+    - opportunities (list): List of potential arbitrage opportunities.
+    """
+    framework.execute_best_opportunity(opportunities)
+
+def log_activity_if_needed(prices, last_log_time):
+    """
+    Log bot activity if the logging interval has passed.
+
+    Parameters:
+    - prices (dict): Dictionary of current prices from exchanges.
+    - last_log_time (float): The last time activity was logged.
+
+    Returns:
+    - last_log_time (float): Updated last log time.
+    """
+    log_interval = LOGGING_CONFIG['log_minutes'] * 60
+    current_time = time.time()
+    if current_time - last_log_time >= log_interval:
+        logger.info("Still running. Last prices found:")
+        for exchange, pairs in prices.items():
+            logger.info(f"{exchange}: {pairs}")
+        return current_time
+    return last_log_time
+
+def should_stop_bot(start_time):
+    """
+    Check if the bot should stop based on the configured test duration.
+
+    Parameters:
+    - start_time (float): The time when the bot started.
+
+    Returns:
+    - bool: True if the bot should stop, False otherwise.
+    """
+    if DISABLE_TRADES:
+        elapsed_hours = (time.time() - start_time) / 3600
+        if elapsed_hours >= TEST_HOURS:
+            logger.info(f"Test duration of {TEST_HOURS} hours completed.")
+            return True
+    return False
+
+def sleep_before_next_check():
+    """
+    Pause the bot for a fixed interval before the next check.
+    """
+    logger.debug("Sleeping for 30 seconds before the next check.")
+    time.sleep(30)
 
 # Start the bot
 real_time_arbitrage_bot()

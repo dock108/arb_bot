@@ -1,5 +1,6 @@
 import time
 import logging
+from decimal import Decimal
 from config.config import COOLDOWN_HOURS, MINIMUM_BALANCES
 
 # Initialize logger
@@ -17,21 +18,25 @@ class ArbitrageOpportunity:
         self.cooldown_tracker = {}
 
     def find_arbitrage_opportunities(self, prices, buy_exchange, sell_exchange):
-        """
-        Find all potential arbitrage opportunities across exchanges.
-        """
         opportunities = []
 
         for pair in prices[buy_exchange]:
             if pair in prices[sell_exchange]:
                 buy_price, sell_price = self.get_prices_for_pair(prices, buy_exchange, sell_exchange, pair)
-                
+
                 if self.is_valid_price_pair(buy_price, sell_price):
                     gross_profit_percentage = self.calculate_gross_profit(buy_price, sell_price)
+                    
+                    # Log calculated gross profit
+                    logger.debug(f"Gross profit for {pair} between {buy_exchange} and {sell_exchange}: {gross_profit_percentage}%")
+                    
                     if gross_profit_percentage > 0:
                         opportunity = self.create_opportunity(buy_exchange, sell_exchange, pair, buy_price, sell_price, gross_profit_percentage)
                         opportunities.append(opportunity)
                         logger.debug(f"Potential arbitrage opportunity found: {opportunity}")
+                else:
+                    # Log why a pair was invalid
+                    logger.debug(f"Invalid price pair for {pair} on {buy_exchange} and {sell_exchange}: {buy_price}, {sell_price}")
 
         return opportunities
 
@@ -98,6 +103,8 @@ class ArbitrageOpportunity:
         """
         Calculate the gross profit percentage for a given trade.
         """
+        buy_price = Decimal(buy_price)
+        sell_price = Decimal(sell_price)
         return ((sell_price - buy_price) / buy_price) * 100
 
     def execute_trade(self, opportunity, exchanges):
